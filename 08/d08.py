@@ -1,4 +1,6 @@
 import numpy as np
+import os
+
 
 print("Day 6 of Advent of Code!")
 
@@ -30,27 +32,23 @@ def decode_image(img, w, h):
         new = np.array(list(map(lambda x: int(x), l)))
         new = np.reshape(new, (w, h))
         img_lrs.append(new)
-    
+
     for i in range(w):
         for j in range(h):
             for l in img_lrs:
-                if l[i][j] in (0,1) and decoded[i][j] == None: 
+                if l[i][j] in (0, 1) and decoded[i][j] is None:
                     decoded[i][j] = l[i][j]
-    
+
     decoded = np.array([a for b in decoded for a in b])
-    decoded = np.reshape(decoded, (h, w))
-    
-    return decoded
+    return np.reshape(decoded, (h, w))
+
 
 def print_img(img):
     for row in img:
         to_print = list(row)
         for i in range(len(to_print)):
             cur = to_print[i]
-            if cur == 1:
-                to_print[i] = '#'
-            else:
-                to_print[i] = ' '
+            to_print[i] = '#' if cur == 1 else ' '
         print(''.join(to_print))
 
 
