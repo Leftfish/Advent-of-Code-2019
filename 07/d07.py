@@ -80,7 +80,7 @@ def perform_io(op, args, inp, mem, ptr):
         return output
 
 
-def run(code, inp=0, noun=None, verb=None, stop_at_output=False, last_ptr=0, debug=False):
+def run(code, inp=[0], noun=None, verb=None, stop_at_output=False, last_ptr=0, debug=False):
     mem = code
     output = inp[-1]
     exit_code = 1
@@ -111,7 +111,7 @@ def run(code, inp=0, noun=None, verb=None, stop_at_output=False, last_ptr=0, deb
             raise ValueError("Opcode {} not supported".format(op))
     if mem[ptr] in EXIT_OPS:
         exit_code = 0
-    return mem, output, ptr, exit_code
+    return output, ptr, exit_code
 
 
 def run_test(prog, mode, inp=0, debug=False):
@@ -125,36 +125,34 @@ def run_set(prog, settings, debug=False):
     for setting in settings:
         inp = 0
         for mode in setting:
-            out = run_test(prog[:], mode, inp, debug=debug)[1]
+            out = run_test(prog[:], mode, inp, debug=debug)[0]
             inp = out
         results.append(out)
     return max(results)
 
 
-def run_feedback_test(prog, settings, debug=False):
-    amplifiers = list(zip([prog[:], prog[:], prog[:], prog[:], prog[:]], settings))
-    pointers = [0, 0, 0, 0, 0]
+def run_feedback_test(no_amplifiers, prog, settings, debug=False):
+    amplifiers = list(zip([prog[:]] * no_amplifiers, settings))
+    pointers = [0 for i in range(no_amplifiers)]
+    inputs = [[] for i in range(no_amplifiers)]
     inp = 0
-    feedback = False
+    
+    for i in range(len(amplifiers)):
+        inputs[i].append(amplifiers[i][1])
+    
     while True:
         for i in range(len(amplifiers)):
-            amp = amplifiers[i]
-            # A very ugly hack to ensure that phase status is passed as input only during the first pass
-            if not feedback: 
-                inputs = [amp[1]] + [inp]
-            else:
-                inputs = [inp]
-            amp, result, pointers[i], exit_code = run(amp[0], inputs, stop_at_output=True, last_ptr=pointers[i], debug=debug)
+            inputs[i].append(inp)
+            result, pointers[i], exit_code = run(amplifiers[i][0], inputs[i], stop_at_output=True, last_ptr=pointers[i], debug=debug)
             inp = result
             if exit_code == 0 and i == len(amplifiers) - 1: 
                 return result
-        feedback = True
 
 
-def run_feedback_set(prog, settings):
+def run_feedback_set(no_amplifiers, prog, settings):
     results = []
     for mode in settings:
-        out = run_feedback_test(prog, mode)
+        out = run_feedback_test(no_amplifiers, prog, mode)
         results.append(out)
     return max(results)
 
@@ -168,4 +166,4 @@ settings = list(permutations(range(5)))
 print(run_set(prog, settings))
 
 settings = list(permutations(range(5,10)))
-print(run_feedback_set(prog,settings))
+print(run_feedback_set(5,prog,settings))
