@@ -1,7 +1,8 @@
-print("Day 6 of Advent of Code!")
-
 import operator
 from itertools import permutations
+
+print("Day 6 of Advent of Code!")
+
 
 def less_than(a, b):
     return 1 if a < b else 0
@@ -80,11 +81,13 @@ def perform_io(op, args, inp, mem, ptr):
         return output
 
 
-def run(code, inp=[0], noun=None, verb=None, stop_at_output=False, last_ptr=0, debug=False):
+def run(code, inp=[0], noun=None,
+        verb=None, stop_at_output=False,
+        last_ptr=0, debug=False):
     mem = code
     output = inp[-1]
-    exit_code = 1
-    if noun: 
+    exit_code = 0
+    if noun:
         code[1] = noun
     if verb:
         code[2] = verb
@@ -100,17 +103,16 @@ def run(code, inp=[0], noun=None, verb=None, stop_at_output=False, last_ptr=0, d
             ptr += op_len
         elif op in IO_OPS:
             output = perform_io(op, args, inp, mem, ptr)
-            if op == 4:
-                if debug: print("Output:", output,"from op",op)
+            if op == 4 and debug:
+                print("Output:", output, "From opcode:", op)
             ptr += op_len
             if stop_at_output and op == 4:
-                break
+                exit_code = 1
+                return output, ptr, exit_code
         elif op in JUMP_OPS:
             ptr = jump(op, op_len, data, ptr)
         else:
             raise ValueError("Opcode {} not supported".format(op))
-    if mem[ptr] in EXIT_OPS:
-        exit_code = 0
     return output, ptr, exit_code
 
 
@@ -136,16 +138,20 @@ def run_feedback_test(no_amplifiers, prog, settings, debug=False):
     pointers = [0 for i in range(no_amplifiers)]
     inputs = [[] for i in range(no_amplifiers)]
     inp = 0
-    
+
     for i in range(len(amplifiers)):
         inputs[i].append(amplifiers[i][1])
-    
+
     while True:
         for i in range(len(amplifiers)):
             inputs[i].append(inp)
-            result, pointers[i], exit_code = run(amplifiers[i][0], inputs[i], stop_at_output=True, last_ptr=pointers[i], debug=debug)
+            result, pointers[i], exit_code = run(amplifiers[i][0],
+                                                 inputs[i],
+                                                 stop_at_output=True,
+                                                 last_ptr=pointers[i],
+                                                 debug=debug)
             inp = result
-            if exit_code == 0 and i == len(amplifiers) - 1: 
+            if exit_code == 0 and i == len(amplifiers) - 1:
                 return result
 
 
@@ -165,5 +171,5 @@ except:
 settings = list(permutations(range(5)))
 print(run_set(prog, settings))
 
-settings = list(permutations(range(5,10)))
-print(run_feedback_set(5,prog,settings))
+settings = list(permutations(range(5, 10)))
+print(run_feedback_set(5, prog, settings))
