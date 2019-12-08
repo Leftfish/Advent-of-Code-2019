@@ -1,5 +1,4 @@
 import numpy as np
-import os
 
 
 print("Day 6 of Advent of Code!")
@@ -59,7 +58,6 @@ except:
     print("File not found")
 
 w, h = 25, 6
-
 
 print("2s times 1s:", calculate_answer(prod, w, h))
 img = decode_image(prod, w, h)
