@@ -47,7 +47,7 @@ def parse_opcode(code):
         return code, params
 
 
-def read(params, args, mem, rel_base, cache):
+def read(mem, cache, args, params, rel_base):
     data = []
     for p, v in zip(params, args):
         # POSITION MODE
@@ -85,7 +85,7 @@ def write(mem, cache, args, params, rel_base, to_write, op):
         mem[target] = to_write
 
 
-def output_value(params, args, mem, rel_base, cache):
+def output_value(mem, cache, args, params, rel_base):
     # POSITION MODE
     if params[0] == 0:
         output = mem[args[-1]]
@@ -117,10 +117,10 @@ def run(code, inp=[0], noun=None,
         op, params = parse_opcode(mem[ptr])
         op_len = get_op_len(op)
         args = mem[ptr + 1:ptr + op_len]
-        data = read(params, args, mem, rel_base, cache)
+        data = read(mem, cache, args, params, rel_base)
         if debug:
             print("Operation: {}\t Data: {}".format(mem[ptr:ptr+op_len], data))
-            print("Params: {}\t Args: {}".format(data, params, args))
+            print("Params: {}\t Args: {}".format(params, args))
             print("Pointer: {}\t Relative base: {}".format(ptr, rel_base))
         if op in MATH_OPS:
             a, b = data[0], data[1]
@@ -134,7 +134,7 @@ def run(code, inp=[0], noun=None,
             write(mem, cache, args, params, rel_base, to_write, op)
             ptr += op_len
         elif op == 4:
-            output = output_value(params, args, mem, rel_base, cache)
+            output = output_value(mem, cache, args, params, rel_base)
             print("Output: ", output)
             ptr += op_len
             if stop_at_output:
