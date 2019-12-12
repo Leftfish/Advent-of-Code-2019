@@ -169,6 +169,7 @@ directions = ((-1,0,"L"),(0,1,"U"),(1,0,"R"),(0,-1,"D"))
 dir_ptr = 0
 current = [0, 0]
 visited = defaultdict(int)
+#visited[(0,0)] = 0
 ptr, rel_base, exit_code = 0, 0, 1
 
 while exit_code == 1:

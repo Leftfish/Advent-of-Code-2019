@@ -1,6 +1,6 @@
 # Advent of Code 2019
 
-So once again I'm trying to find out how far I can make it in [Advent of Code](https://adventofcode.com/2019/). After tapping out in 2018 after 9 days, I'm trying to beat this score in 2019. 
+So once again I'm trying to find out how far I can make it in [Advent of Code](https://adventofcode.com/2019/). After tapping out in 2018 after 9 days, I decided try to beat this score in 2019 - and I did.
 
 **Circumstances in favor?**
 
