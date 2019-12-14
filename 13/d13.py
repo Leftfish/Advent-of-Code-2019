@@ -1,4 +1,3 @@
-import operator
 from collections import defaultdict
 
 class Computer():
@@ -71,6 +70,24 @@ class Computer():
             op_len = 4
         return op_len
 
+    def get_triplets(self):
+        i = 0
+        triples = []
+        while i < len(self.output):
+            triples.append(self.output[i:i+3])
+            i += 3
+        return triples
+
+    def find_object(self, obj):
+        obj_codes = {"PADDLE": 3, "BALL": 4, "SCORE": -1}
+        board = self.get_triplets()
+        for o in board:
+            if obj != "SCORE" and o[2] == obj_codes[obj]:
+                x, y = o[0], o[1]
+                return x, y
+            if obj == "SCORE" and o[0] == -1:
+                return o[2], None
+
 def run(c, noun=None, verb=None, debug=False, stop_output=False):
     if noun:
         c.memory[1] = noun
@@ -137,75 +154,20 @@ def run(c, noun=None, verb=None, debug=False, stop_output=False):
             c.ptr += op_len
     return exit_code
 
-def paint(computer, directions, dir_ptr, current, visited, exit_code):
-    while True:
-        c = tuple(current)
-        inp = visited[c] if c in visited else 0
-        cx.set_input(inp)
-        exit_code = run(cx,stop_output=True)
-        if exit_code == 0: break
-        result = cx.output.pop(0)
-        visited[tuple(current)] = result
-        exit_code = run(cx,stop_output=True)
-        if exit_code == 0: break
-        result = cx.output.pop(0)
-        if result == 0:
-            dir_ptr -= 1
-            if dir_ptr < 0: 
-                dir_ptr = 3
-        else:
-            dir_ptr += 1
-            if dir_ptr > 3:
-                dir_ptr = 0
-        current[0] += directions[dir_ptr][0]
-        current[1] += directions[dir_ptr][1]
-
-def paint_sign(visited):
-    xs = [a[0] for a in visited]
-    ys = [a[1] for a in visited]
-    table_x = abs(max(xs)) + abs(min(xs)) + 1
-    table_y = abs(max(ys)) + abs(min(ys)) + 1
-    table = [[' ' for i in range(table_x)] for j in range(table_y)]
-
-    for k in visited:
-        x = k[0]
-        y = k[1] - 1
-        if visited[k] == 1:
-            table[y][x] = '#'
-
-    for i in range(len(table)):
-        print(i, "->", "".join(table[i]))
-
-
 try:
-    with open("input11", mode='r') as inp11:
-        prog = list(map(lambda x: int(x), inp11.read().rstrip().split(',')))
+    with open("input13", mode='r') as inp13:
+        prog = list(map(lambda x: int(x), inp13.read().rstrip().split(',')))
 except:
     print("File not found")
 
+cmptr = Computer()
+cmptr.load_program(prog)
+run(cmptr)
+blocks = sum([1 for i in range(2,len(cmptr.output),3) if cmptr.output[i] == 2])
+print("Day 13 pt 1: ", blocks)
 
-cx = Computer()
-cx.load_program(prog)
 
-directions = ((-1,0,"L"),(0,1,"U"),(1,0,"R"),(0,-1,"D"))
-dir_ptr = 1
-current = [0, 0]
-visited = defaultdict(int)
-visited[(0,0)] = 0
-exit_code = 1
-
-paint(cx, directions, dir_ptr, current, visited, exit_code)
-print("Day 11 pt. 1: ", len(visited))
-
-cx.reset()
-cx.load_program(prog)
-dir_ptr = 1
-current = [0, 0]
-visited = defaultdict(int)
-visited[(0,0)] = 1
-exit_code = 1
-
-paint(cx, directions, dir_ptr, current, visited, exit_code)
-print("Day 11 pt. 2:")
-paint_sign(visited)
+## TODO: implement AI for part 2. play the game until no blocks left.
+## each time: it outputs board state, but if triple begins with -1, 0, last part == score
+## first input 2    
 
