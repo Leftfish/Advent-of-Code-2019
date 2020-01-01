@@ -1,6 +1,5 @@
 from math import gcd
 
-
 with open('input10', mode='r') as inp10:
     arr = [list(line) for line in inp10.readlines()]
 
@@ -10,7 +9,7 @@ def find_astros(arr):
     astr = []
     for y in range(row):
         for x in range(col):
-            if arr[x][y] == '#':
+            if arr[x][y] in '#':
                 astr.append((x, y))
     return astr
 
@@ -22,7 +21,7 @@ def check_dirs(astr, a):
         rel_x = oth[0] - x
         rel_y = oth[1] - y
         dvsr = gcd(rel_x, rel_y)
-        if dvsr == 0: 
+        if dvsr == 0:
             continue
         path = (rel_x // dvsr, rel_y // dvsr)
         dirs.add(path)
@@ -42,32 +41,68 @@ def find_station(astr):
     return station, best, others
 
 
+def get_rel(a, station):
+    rel_x = station[0] - a[0]
+    rel_y = station[1] - a[1]
+    if (rel_x >= 0 and rel_y > 0):
+        default = 1e8
+    else:
+        default = -1e8
+    ratio = rel_y/rel_x if rel_x != 0 else default
+    return rel_y, rel_x, ratio
+
+
+def find_nearest(others, station, astromap):
+    x, y = station
+    visible = []
+    for o in others:
+        cx, cy = x + o[0], y + o[1]
+        try:
+            while astromap[cx][cy] != '#':
+                cx += o[0]
+                cy += o[1]
+            visible.append((cx, cy))
+        except:
+            continue
+    return visible
+
+
+def find_visible(astr, others, station, arr):
+    visible = find_nearest(others, station, arr)
+    q1, q2, q3, q4 = [], [], [], []
+    for a in visible:
+        rel_y, rel_x, _ = get_rel(a, station)
+        if (rel_x >= 0 and rel_y <= 0):
+            q1.append(a)
+        elif (rel_x < 0 and rel_y <= 0):
+            q2.append(a)
+        elif (rel_x < 0 and rel_y > 0):
+            q3.append(a)
+        else:
+            q4.append(a)
+    q1.sort(key=lambda a: get_rel(a, station)[2], reverse=True)
+    q2.sort(key=lambda a: get_rel(a, station)[2], reverse=True)
+    q3.sort(key=lambda a: get_rel(a, station)[2], reverse=True)
+    q4.sort(key=lambda a: get_rel(a, station)[2], reverse=True)
+    return q1, q2, q3, q4
+
+
+def vape_asteroids(astr, others, station, arr):
+    i = 0
+    while len(astr) > 1:
+        q1, q2, q3, q4 = find_visible(astr, others, station, arr)
+        all_asteroids = q1 + q2 + q3 + q4
+        for a in all_asteroids:
+            x, y = a[0], a[1]
+            arr[x][y] = '.'
+            i += 1
+            if i == 200:
+                return "200th vaped asteroid: {}, {}".format(y, x)
+        astr = find_astros(arr)
+    return "Less than 200 asteroids vaped"
+
 astr = find_astros(arr)
-station, visible = find_station(astr)[0], find_station(astr)[1]
+station, visible, others = find_station(astr)
 print("Best station: ", station)
 print("Visible from station: ", visible)
-
-'''
-def make_ratio(x):
-    if x[1] == 0:
-        return 0
-    else:
-        return x[0]/x[1]
-
-def find_visible(astr):
-    station, _, others = find_station(astr)
-    h1, h2 = [], []
-    print(len(others))
-    for a in others:
-        if (a[0] > 0 and a[1] > 0) or (a[0] > 0 and a[1]) < 0:
-            h1.append(a)
-        else:
-            h2.append(a)
-    h1.sort(key = lambda a: make_ratio(a))
-    h2.sort(key = lambda a: make_ratio(a))
-    print(h1)
-    print(h2)
-    
-'''
-
-#TODO: sorting lists of ratios, maybe rewriting to radians and arctan2?
+print(vape_asteroids(astr, others, station, arr))
